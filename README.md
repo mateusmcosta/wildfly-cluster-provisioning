@@ -23,7 +23,9 @@ Access the nodes and start the wildfly with: <br/>
     $ vagrant ssh wildfly01
     $ cd /opt/wildfly-21.0.2.Final
     $ ./bin/standalone.sh -b 0.0.0.0
-<br/>
+
+And node02:<br/>
+
     $ vagrant ssh wildfly02
     $ cd /opt/wildfly-21.0.2.Final
     $ ./bin/standalone.sh -b 0.0.0.0
