@@ -29,6 +29,7 @@ Access the nodes and start the wildfly with:
 
 ## Test Cluster
 ModCluster url:
-    * http://10.220.60.11/mod_cluster_manager
-    * http://10.220.60.11/mod_cluster_manager 
-    * http://sample.teste.com.br/sample-1.0.0/hello
+<br/>
+* http://10.220.60.11/mod_cluster_manager
+* http://10.220.60.11/mod_cluster_manager 
+* http://sample.teste.com.br/sample-1.0.0/hello
