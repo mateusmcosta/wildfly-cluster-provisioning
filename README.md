@@ -19,10 +19,15 @@ In the project directory:
     $ ansible-playbook provisioning.yml -i hosts
 
 Access the nodes and start the wildfly with:
+
+node01
+<br/>
     $ vagrant ssh wildfly01
     $ cd /opt/wildfly-21.0.2.Final
     $ ./bin/standalone.sh -b 0.0.0.0
-
+<br/>
+node02
+<br/>
     $ vagrant ssh wildfly02
     $ cd /opt/wildfly-21.0.2.Final
     $ ./bin/standalone.sh -b 0.0.0.0
@@ -31,5 +36,5 @@ Access the nodes and start the wildfly with:
 ModCluster url:
 <br/>
 * http://10.220.60.11/mod_cluster_manager
-* http://10.220.60.11/mod_cluster_manager 
+* http://10.220.60.11/mod_cluster_manager
 * http://sample.teste.com.br/sample-1.0.0/hello
