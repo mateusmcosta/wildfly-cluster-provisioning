@@ -1,0 +1,24 @@
+[wildfly_server_01]
+10.220.60.11 ansible_user=vagrant ansible_ssh_private_key_file=".vagrant/machines/wildfly01/virtualbox/private_key"
+
+[wildfly_server_01:vars]
+host_ip=10.220.60.11
+host_name=wildfly-server-01
+proxy_name=sample1.teste.com.br
+node_name=sample-node-01
+proxy_alias=proxy1
+
+[wildfly_server_02]
+10.220.60.12 ansible_user=vagrant ansible_ssh_private_key_file=".vagrant/machines/wildfly02/virtualbox/private_key"
+
+[wildfly_server_02:vars]
+host_ip=10.220.60.12
+host_name=host_name=wildfly-server-02
+proxy_name=sample2.teste.com.br
+node_name=sample-node-02
+proxy_alias=proxy2
+
+
+[wildfly_nodes:children]
+wildfly_server_01
+wildfly_server_02

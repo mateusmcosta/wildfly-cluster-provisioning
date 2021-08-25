@@ -1,0 +1,8 @@
+---
+  balancer_address: "sample.teste.com.br"
+  balancer_ips: "10.220.60.11 10.220.60.12"
+  balancer_name: "samplebalancer"
+  httpd_foler: "/etc/httpd"
+  java_home: "/usr/lib/jvm/java-1.8.0-openjdk"
+  wildfly_home: "/opt/wildfly-21.0.2.Final"
+  wildfly_dest: "/opt"

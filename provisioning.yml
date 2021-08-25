@@ -1,0 +1,10 @@
+---
+- hosts: wildfly_nodes
+  roles:
+    - 01_network_setup
+    - 02_selinux_disable
+    - 03_increase_buffer_sizes
+    - 04_httpd_install
+    - 05_modcluster_install
+    - 06_java_install
+    - 07_wildfly_install
