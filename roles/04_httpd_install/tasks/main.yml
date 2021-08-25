@@ -1,0 +1,22 @@
+---
+  - name: Install HTTPD
+    become: true
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+        - httpd
+        - httpd-devel
+        - apr-devel
+        - openssl-devel
+        - mod_ssl
+    notify:
+      - restart httpd
+
+  - name: Enable service httpd
+    become: true
+    systemd:
+      name: httpd
+      enabled: yes
+      masked: no

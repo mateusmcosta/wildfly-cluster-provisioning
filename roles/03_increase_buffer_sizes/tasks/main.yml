@@ -1,0 +1,8 @@
+---
+  - name: 'Increase the maximum allowed buffer sizes'
+    become: true
+    copy:
+      src: 'files/66-modcluste.conf'
+      dest: '/etc/sysctl.d/66-modcluste.conf'
+    notify:
+      - Reboot host and wait for it to restart

@@ -1,0 +1,8 @@
+---
+  - name: 'Disable SELinux'
+    become: true
+    copy:
+      src: 'files/config'
+      dest: '/etc/selinux/config'
+    notify:
+      - Reboot host and wait for it to restart

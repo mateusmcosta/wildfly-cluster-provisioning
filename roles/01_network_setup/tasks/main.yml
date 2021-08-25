@@ -1,0 +1,15 @@
+---
+- name: Copy hosts to /etc/hosts
+  become: true
+  template:
+    src: 'templates/hosts.j2'
+    dest: /etc/hosts
+
+- name: Add Ansible proxies mappings to /etc/hosts
+  become: true
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {% for host in groups['all'] %}
+      {{ hostvars[host].host_ip }} {{ hostvars[host].proxy_name }}
+      {% endfor %}

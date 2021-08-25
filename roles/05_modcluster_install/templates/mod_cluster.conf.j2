@@ -1,0 +1,97 @@
+LoadModule cluster_slotmem_module modules/mod_cluster_slotmem.so
+LoadModule manager_module modules/mod_manager.so
+LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
+LoadModule advertise_module modules/mod_advertise.so
+
+MemManagerFile /var/cache/mod_cluster
+
+# Desabilita a criacao/relacao automatica dos nodos com os balanceadores. Precisa usar o ProxyPass no vhost
+CreateBalancers 1
+# Com esta configuracao nao existe a auto descoberta dos nodos. Eh necessario informar explicitamente no jboss os ips dos balanceadores
+ServerAdvertise Off
+
+Listen 6666
+NameVirtualHost *:80
+
+#PersistSlots - When set to on, nodes, aliases and contexts are persisted in files. The default value is off.
+#Esta configuracao foi adicionada para permitir rodar o comando "service httpd graceful" para rotacionamento dos logs de httpd
+# e manter os contextos que ja estavam habilitados
+PersistSlots on
+
+# CheckNonce - Switch check of nonce when using mod_cluster-manager handler. The default value is on - Nonce checked.
+# Esta configuracao foi adicionada para facilitar a chamada remota do mod_cluster_manager. Eu precisava habilitar todos os
+#   contextos do httpd quando o servidor fosse inicializado. Uma vez que o acesso a pagina mod_cluster_manager eh restrita
+#   esta configuracao pode ser alterada para off, facilitando assim sua url para acesso.
+# CheckNonce on  -> curl "http://10.XXX.XXX.XXX/mod_cluster_manager?nonce=fe1da7ae-6459-4dbc-9399-ad479fc5fdba&Cmd=ENABLE-APP&Range=NODE&JVMRoute=NODE_XXX"
+# CheckNonce off -> curl "http://10.XXX.XXX.XXX/mod_cluster_manager?Cmd=ENABLE-APP&Range=NODE&JVMRoute=NODE_XXX"
+# Usamos isto para quando o linux for reiniciado, no startup, habilitar todos os contexto publicados no httpd. Ver script em: /etc/rc.local
+CheckNonce off
+
+<VirtualHost *:80>
+    # Mostra informacoes de status do servidor
+    <Location /server-status>
+        SetHandler server-status
+        Order Deny,Allow
+        Deny from all
+        Allow from localhost 10
+    </Location>
+    # Mostra informacoes sobre mod_cluster
+    <Location /mod_cluster_manager>
+        SetHandler mod_cluster-manager
+        Order deny,allow
+        Deny from all
+        # Maquinas
+        Allow from localhost 10 172
+        # Maquinas locais
+        Allow from 172.18.253.129
+    </Location>
+</VirtualHost>
+
+LogFormat "Time Taken: %T %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %{COOKIE}i %{SET-COOKIE}o" combinedWithCookie
+
+
+# ==================================== {{ balancer_address }} ====================================
+
+# Entrada do usuario
+<VirtualHost *:80>
+    # Nome do virtual ip - este nome deve estar definido no DNS
+    ServerName {{ balancer_address }}
+
+
+    # Faz o encaminhamento para o balanceador que foi definido no standalone.xml do jboss
+    # stickysession faz com que a requisicao seja mantida sempre no mesmo servidor
+    # nofailover = ON significa que DEVE ter failover, segundo a Red Hat
+    ProxyPass / balancer://{{ balancer_name }}/ stickysession=JSESSIONID|jsessionid nofailover=On
+    # Realiza a troca do IP do jboss na URL para a URL do IP virtual exemplo: 10.220.60.11:8180
+    ProxyPassReverse / balancer://{{ balancer_name }}/
+    # Mantem o Ip do cliente que fez a requisicao. Por exemplo: o apache encaminha a requisicao para o jboss e esta propriedade On irÃ¡ manter o Ip de origem.
+    # caso estiver Off ira colocar o ip virtual como ip da requisicao para o jboss.
+    ProxyPreserveHost On
+
+    # Configuracoes de log.
+    #LogLevel warn
+    #ErrorLog /opt/jboss-ews-2.0/httpd/logs/error-appnfc.log
+    #CustomLog /opt/jboss-ews-2.0/httpd/logs/access-appnfc.log combinedWithCookie
+</VirtualHost>
+
+
+# ==================================== vhost para jboss criar balanceadores ===================================
+
+# # Acessado pelo jboss para que cada nodo possa se registrar
+<VirtualHost *:6666>
+    DirectoryIndex disabled
+
+	# Configuracoes de log.
+    LogLevel debug
+    # ErrorLog "|/opt/jbcs-httpd24-2.4/httpd/sbin/rotatelogs -p '/opt/jbcs-httpd24-2.4/httpd/sbin/compresslogs' -l /opt/jbcs-httpd24-2.4/httpd/logs/error-balancers.log.%Y-%m-%d 86400"
+    # CustomLog "|/opt/jbcs-httpd24-2.4/httpd/sbin/rotatelogs -p '/opt/jbcs-httpd24-2.4/httpd/sbin/compresslogs' -l /opt/jbcs-httpd24-2.4/httpd/logs/access-balancers.log.%Y-%m-%d 86400" accessLogFormat
+
+    # Permite que o host virtual receber comunicacao via MCPM (Mod Cluster Protocol Message).
+    EnableMCPMReceive On
+
+    # Filtra as origens das requisicoes. Eh necessario configurar a rede
+    <Directory />
+        Require ip {{ balancer_ips }}
+        Require local
+    </Directory>
+</VirtualHost>

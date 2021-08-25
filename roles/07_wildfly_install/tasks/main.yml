@@ -1,0 +1,32 @@
+---
+ - name: Check if wildfly has already installed
+   become: true
+   stat:
+     path: "{{ wildfly_home }}"
+   register: wildfly_folder
+
+ - name: Copy wildfly to /opt/
+   become: true
+   unarchive:
+     src: files/wildfly-21.0.2.Final.tar.gz
+     dest: '{{ wildfly_dest }}'
+   when: wildfly_folder.stat.exists == false
+
+
+ - name: Copy standalone.conf
+   become: true
+   template:
+     src: 'templates/standalone.conf.j2'
+     dest: '{{ wildfly_home }}/bin/standalone.conf'
+
+ - name: Copy standalone.xml
+   become: true
+   template:
+     src: 'templates/standalone.xml.j2'
+     dest: '{{ wildfly_home }}/standalone/configuration/standalone.xml'
+
+ - name: 'Install Sample APP'
+   copy:
+     src: 'files/sample-1.0.0.war'
+     dest: '{{ wildfly_home }}/standalone/deployments/sample-1.0.0.war'
+   become: yes

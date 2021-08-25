@@ -1,0 +1,9 @@
+---
+  - name: Install Java openjdk 8
+    become: true
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+        - java-1.8.0-openjdk-devel
